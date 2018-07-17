@@ -2,8 +2,7 @@
 import scrapy
 
 from scrapy.utils.response import open_in_browser
-from scrapy_splash import SplashRequest, SplashFormRequest
-from scrapy import FormRequest
+from scrapy import Request, FormRequest
 
 
 class ModSpider(scrapy.Spider):
@@ -11,15 +10,11 @@ class ModSpider(scrapy.Spider):
 
     def start_requests(self):
         url = 'https://www.nexusmods.com/newvegas/'
-
-        yield SplashRequest(url, self.make_search,
-                            endpoint='render.html',
-                            args={'wait': 0.5},
-                            )
+        yield Request(url=url, callback=self.make_search)
 
     def make_search(self, response):
         XPATH_SEARCH_FORM = '//*[@id="nav-search"]/form'
-        search_term = 'FOOK New Vegas'
+        search_term = 'FOOK'
         category = 'Mods'
 
         form = response.xpath(XPATH_SEARCH_FORM)
@@ -27,10 +22,15 @@ class ModSpider(scrapy.Spider):
         form_url = form.xpath('@action').extract_first()
         form_data = {'gsearch': search_term, 'gsearchtype': category}
 
-        yield SplashFormRequest(url=form_url, callback=self.search_results,
-                                method=form_method, formdata=form_data)
+        yield FormRequest(url=form_url, callback=self.search_results,
+                          method=form_method, formdata=form_data)
 
     def search_results(self, response):
-        file = open('output.html', 'w')
-        file.write(response.text)
-        file.close()
+        XPATH_MOD_TILES = '//ul[@class="tiles "]'
+
+        mod_list = response.xpath(XPATH_MOD_TILES)
+
+        # yield Request(url=search_url, callback=self.follow_link)
+
+    def follow_link(self, response):
+        open_in_browser(response)
