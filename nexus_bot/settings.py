@@ -13,9 +13,6 @@ BOT_NAME = 'nexus_bot'
 
 SPIDER_MODULES = ['nexus_bot.spiders']
 NEWSPIDER_MODULE = 'nexus_bot.spiders'
-SPLASH_URL = 'http://localhost:8050/'
-DUPEFILTER_CLASS = 'scrapy_splash.SplashAwareDupeFilter'
-HTTPCACHE_STORAGE = 'scrapy_splash.SplashAwareFSCacheStorage'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -49,18 +46,15 @@ ROBOTSTXT_OBEY = True
 
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-SPIDER_MIDDLEWARES = {
-    'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
-}
+# SPIDER_MIDDLEWARES = {
+
+# }
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
-    'scrapy_splash.SplashCookiesMiddleware': 723,
-    'scrapy_splash.SplashMiddleware': 725,
-    'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810,
 }
 
 # Enable or disable extensions
