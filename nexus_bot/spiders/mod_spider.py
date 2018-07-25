@@ -26,11 +26,15 @@ class ModSpider(scrapy.Spider):
                           method=form_method, formdata=form_data)
 
     def search_results(self, response):
-        XPATH_MOD_TILES = '//ul[@class="tiles "]'
-
+        XPATH_MOD_TILES = '//div[@class="tile-content"]/h3/a'
+        mod = 'FOOK - New Vegas'
         mod_list = response.xpath(XPATH_MOD_TILES)
 
-        # yield Request(url=search_url, callback=self.follow_link)
+        for element in mod_list:
+            name = element.xpath('text()').extract_first()
+            if name == mod:
+                link = element.xpath('@href').extract_first()
+                yield Request(url=link, callback=self.follow_link)
 
     def follow_link(self, response):
         open_in_browser(response)
