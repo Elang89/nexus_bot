@@ -1,8 +1,10 @@
 
 import scrapy
 
-from scrapy.utils.response import open_in_browser
 from scrapy import Request, FormRequest
+from scrapy.utils.response import open_in_browser
+from nexus_bot.items import ModFile
+from nexus_bot.utils.util_funcs import convert_to_mb
 
 
 class ModSpider(scrapy.Spider):
@@ -37,4 +39,40 @@ class ModSpider(scrapy.Spider):
                 yield Request(url=link, callback=self.follow_link)
 
     def follow_link(self, response):
-        open_in_browser(response)
+        XPATH_MOD_FILES = '//li[@id="mod-page-tab-files"]/a'
+        file_tab = response.xpath(XPATH_MOD_FILES)
+        file_tab_option = file_tab.xpath('@href').extract_first()
+        file_tab_link = response.urljoin(file_tab_option)
+
+        yield Request(url=file_tab_link, callback=self.extract_file_data)
+
+    def extract_file_data(self, response):
+        XPATH_FILE_DATA = '//dt[@class="clearfix accopen"]'
+        XPATH_DOWNLOAD_LINKS = '//a[span[text()="Manual Download"]]'
+        ORIGINAL_NAME = 'FOOK'
+
+        names = {'FOOK v1-13 ESMs and ReadMes',
+                 'FOOK v1-13 Required Files', 'FOOK v1-13 Optional Files'}
+
+        mod_id = list(filter(str.isdigit, response.url))
+        mod_id = ''.join(mod_id)
+        file_data = response.xpath(XPATH_FILE_DATA)
+        file_download_links = response.xpath(XPATH_DOWNLOAD_LINKS)
+        mod_record = ModFile(mod_id=mod_id, mod_name=ORIGINAL_NAME)
+        mod_record['files'] = {}
+        total_size = 0
+
+        for element in file_data:
+            name = element.xpath(
+                'span[normalize-space(text())]/text()').extract_first()
+            if name in names:
+                link = file_download_links.xpath('@href').extract_first()
+                file_size = element.xpath(
+                    '''span/div[@class="file-download-stats clearfix"]/ul/
+                    li[@class="stat-filesize"]/div/div[@class="stat"]/text()''').extract_first()
+                numeric_size = convert_to_mb(file_size)
+                total_size += numeric_size
+                mod_record['files'][name] = (numeric_size, link)
+                print(name)
+        mod_record['total_MBs'] = total_size
+        yield mod_record

@@ -12,3 +12,10 @@ class NexusBotItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     pass
+
+
+class ModFile(scrapy.Item):
+    mod_id = scrapy.Field()
+    mod_name = scrapy.Field()
+    files = scrapy.Field()
+    total_MBs = scrapy.Field()
